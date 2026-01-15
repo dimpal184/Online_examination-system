@@ -25,7 +25,8 @@ The Online Examination System is a web-based application that allows students to
 3. Run using localhost (XAMPP / WAMP) if backend is used
 
 ## 📷 Screenshots
-(Add screenshots here)
+<img width="1875" height="879" alt="image" src="https://github.com/user-attachments/assets/1167b8f7-5acd-42f9-82a0-8bfc98884c2b" />
+
 
 ## 👩‍💻 Author
 Dimpal Bashera

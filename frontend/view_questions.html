@@ -1,0 +1,319 @@
+<!-- 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Exam Questions</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa; /* Light background */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+
+    <div class="bg-white p-8 md:p-10 rounded-2xl shadow-2xl w-full max-w-4xl border border-indigo-100 mt-8">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-2 text-center">Exam Questions Overview </h1>
+        <p class="text-gray-500 text-center mb-8 border-b pb-4">
+            Exam Reference ID: <span id="examIdDisplay" class="font-bold text-indigo-600">Loading...</span>
+        </p>
+
+        <div id="questions-container" class="space-y-6">
+            <p id="loading-message" class="text-center text-gray-500">Loading questions...</p>
+        </div>
+
+        <div id="message-box" class="mt-6 hidden">
+            <div id="message" class="rounded-xl p-4 text-center font-medium shadow-md"></div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+            <a id="addMoreQuestionsBtn" 
+                class="w-full sm:w-auto px-6 py-3 text-center border border-indigo-400 rounded-full shadow-md text-base font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 cursor-pointer">
+                ➕ Add More Questions
+            </a>
+            <a href="create_exam.html" 
+                class="w-full sm:w-auto px-6 py-3 text-center border border-gray-300 rounded-full shadow-md text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                Create Another Exam
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const questionsContainer = document.getElementById('questions-container');
+        const examIdDisplay = document.getElementById('examIdDisplay');
+        const loadingMessage = document.getElementById('loading-message');
+        const addMoreQuestionsBtn = document.getElementById('addMoreQuestionsBtn');
+        const messageBox = document.getElementById('message-box');
+        const messageEl = document.getElementById('message');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const examId = urlParams.get('examId');
+
+        if (examId) {
+            examIdDisplay.textContent = examId;
+            addMoreQuestionsBtn.href = `add_questions.html?examId=${examId}`;
+            fetchQuestions(examId);
+        } else {
+            examIdDisplay.textContent = 'Not found';
+            showMessage('error', 'Exam ID not found in URL. Please go back and create an exam first.');
+            loadingMessage.textContent = '';
+            addMoreQuestionsBtn.style.display = 'none';
+        }
+
+        async function fetchQuestions(examId) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/exams/${examId}/questions`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                
+                const questions = await response.json();
+
+                loadingMessage.style.display = 'none';
+                questionsContainer.innerHTML = ''; // Clear the initial loading message
+
+                if (questions.length === 0) {
+                    questionsContainer.innerHTML = '<p class="text-center text-xl py-6 text-gray-500 border border-dashed border-gray-300 rounded-lg">No questions found for this exam. <a href="add_questions.html?examId=' + examId + '" class="text-indigo-600 hover:text-indigo-800 font-semibold">Add some now!</a></p>';
+                    return;
+                }
+
+                questions.forEach((question, index) => {
+                    const questionCard = document.createElement('div');
+                    // Changed styling here for better appearance
+                    questionCard.className = 'bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition duration-300 hover:shadow-xl';
+                    
+                    // Logic to find the full text of the correct answer (using the same logic as before)
+                 // --- Start of Corrected Logic ---
+// 1. **Identify the correct property name from the API.** //    Assuming your backend sends the correct option letter (A, B, C, D) 
+//    in a property named 'correctOption'. If it's 'correctAnswer', this 
+//    will still work if the value is null/undefined initially.
+const correctOptionLetter = question.correctOption || question.correctAnswer; 
+
+let correctOptionText = 'Data Missing'; // Default for clarity if data is bad
+
+const optionLabels = ['A', 'B', 'C', 'D'];
+const indexMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+
+if (question.options && correctOptionLetter) {
+    const letterUpper = correctOptionLetter.toUpperCase();
+    
+    // 2. Look up the index based on the letter
+    const optionIndex = indexMap[letterUpper]; 
+
+    // 3. Get the full text of the correct option
+    if (optionIndex !== undefined && question.options[optionIndex]) {
+        correctOptionText = question.options[optionIndex];
+    }
+}
+// --- End of Corrected Logic ---
+
+                    const questionHtml = `
+                        <div class="flex items-center justify-between border-b pb-3 mb-3">
+                            <h3 class="text-xl font-bold text-indigo-700">Question ${index + 1}</h3>
+                            <span class="text-sm font-medium text-gray-500">ID: ${question._id}</span>
+                        </div>
+                        
+                        <p class="text-gray-800 text-lg mb-4 font-medium">${question.text}</p>
+                        
+                        <div class="space-y-2">
+                            ${question.options.map((option, i) => `
+                                <div class="p-3 rounded-lg ${optionLabels[i] === question.correctAnswer ? 'bg-green-50 border border-green-300 shadow-sm' : 'bg-gray-50 border border-gray-200'}">
+                                    <span class="font-bold text-sm mr-2 ${optionLabels[i] === question.correctAnswer ? 'text-green-600' : 'text-gray-600'}">${optionLabels[i]}.</span> 
+                                    <span class="text-gray-700">${option}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <p class="mt-4 text-base font-semibold border-t pt-3">
+                            <span class="text-green-600">✅ Correct Answer:</span> 
+                      <span class="text-green-800">${correctOptionLetter} - ${correctOptionText}</span>
+                        </p>
+                    `;
+                    questionCard.innerHTML = questionHtml;
+                    questionsContainer.appendChild(questionCard);
+                });
+
+            } catch (error) {
+                console.error('Error fetching questions:', error);
+                loadingMessage.textContent = 'Failed to load questions. Check server connection.';
+                loadingMessage.className = 'text-center text-2xl py-8 text-red-500';
+            }
+        }
+
+        function showMessage(type, text) {
+            messageBox.classList.remove('hidden');
+            messageEl.textContent = text;
+            if (type === 'success') {
+                messageEl.className = 'bg-green-100 text-green-800 p-4 rounded-xl';
+            } else {
+                messageEl.className = 'bg-red-100 text-red-800 p-4 rounded-xl';
+            }
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Exam Questions</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+
+<div class="bg-white p-8 md:p-10 rounded-2xl shadow-2xl w-full max-w-4xl border border-indigo-100 mt-8">
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-2 text-center">Exam Questions Overview</h1>
+    <p class="text-gray-500 text-center mb-8 border-b pb-4">
+        Exam Reference ID: <span id="examIdDisplay" class="font-bold text-indigo-600">Loading...</span>
+    </p>
+
+    <div id="questions-container" class="space-y-6">
+        <p id="loading-message" class="text-center text-gray-500">Loading questions...</p>
+    </div>
+
+    <div id="message-box" class="mt-6 hidden">
+        <div id="message" class="rounded-xl p-4 text-center font-medium shadow-md"></div>
+    </div>
+
+    <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+        <a id="addMoreQuestionsBtn"
+           class="w-full sm:w-auto px-6 py-3 text-center border border-indigo-400 rounded-full shadow-md text-base font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 cursor-pointer">
+            ➕ Addd More Questions
+        </a>
+        <a href="create_exam.html"
+           class="w-full sm:w-auto px-6 py-3 text-center border border-gray-300 rounded-full shadow-md text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+            Create Another Exam
+        </a>
+    </div>
+</div>
+
+<script>
+    const questionsContainer = document.getElementById('questions-container');
+    const examIdDisplay = document.getElementById('examIdDisplay');
+    const loadingMessage = document.getElementById('loading-message');
+    const addMoreQuestionsBtn = document.getElementById('addMoreQuestionsBtn');
+    const messageBox = document.getElementById('message-box');
+    const messageEl = document.getElementById('message');
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const examId = urlParams.get('examId');
+
+    if (examId) {
+        examIdDisplay.textContent = examId;
+        addMoreQuestionsBtn.href = `add_questions.html?examId=${examId}`;
+        fetchQuestions(examId);
+    } else {
+        examIdDisplay.textContent = 'Not found';
+        showMessage('error', 'Exam ID not found in URL.');
+        loadingMessage.textContent = '';
+        addMoreQuestionsBtn.style.display = 'none';
+    }
+
+    async function fetchQuestions(examId) {
+        try {
+            const response = await fetch(`http://localhost:3000/api/exams/${examId}/questions`);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Error: ${response.status}`);
+            }
+
+            const questions = await response.json();
+            loadingMessage.style.display = 'none';
+            questionsContainer.innerHTML = '';
+
+            if (questions.length === 0) {
+                questionsContainer.innerHTML =
+                    `<p class="text-center text-xl py-6 text-gray-500 border border-dashed border-gray-300 rounded-lg">
+                        No questions found. 
+                        <a href="add_questions.html?examId=${examId}" class="text-indigo-600 font-semibold">Add some now!</a>
+                    </p>`;
+                return;
+            }
+
+            const optionLabels = ['A', 'B', 'C', 'D'];
+            const letterToIndex = { A: 0, B: 1, C: 2, D: 3 };
+
+            questions.forEach((question, index) => {
+                const correctIndex = letterToIndex[question.correctAnswer];
+                const correctOptionText = question.options[correctIndex] || "Data Missing";
+
+                const questionCard = document.createElement('div');
+                questionCard.className =
+                    'bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition duration-300 hover:shadow-xl';
+
+                questionCard.innerHTML = `
+                    <div class="flex items-center justify-between border-b pb-3 mb-3">
+                        <h3 class="text-xl font-bold text-indigo-700">Question ${index + 1}</h3>
+                        <span class="text-sm font-medium text-gray-500">ID: ${question._id}</span>
+                    </div>
+
+                    <p class="text-gray-800 text-lg mb-4 font-medium">${question.text}</p>
+
+                    <div class="space-y-2">
+                        ${question.options.map((option, i) => `
+                            <div class="p-3 rounded-lg ${
+                                i === correctIndex
+                                    ? 'bg-green-50 border border-green-300 shadow-sm'
+                                    : 'bg-gray-50 border border-gray-200'
+                            }">
+                                <span class="font-bold text-sm mr-2 ${
+                                    i === correctIndex
+                                        ? 'text-green-600'
+                                        : 'text-gray-600'
+                                }">${optionLabels[i]}.</span>
+                                <span class="text-gray-700">${option}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <p class="mt-4 text-base font-semibold border-t pt-3">
+                        <span class="text-green-600">✅ Correct Answer:</span>
+                        <span class="text-green-800">${question.correctAnswer} - ${correctOptionText}</span>
+                    </p>
+                `;
+
+                questionsContainer.appendChild(questionCard);
+            });
+
+        } catch (error) {
+            console.error('Error fetching questions:', error);
+            loadingMessage.textContent = 'Failed to load questions.';
+            loadingMessage.className = 'text-red-500 text-center text-xl';
+        }
+    }
+
+    function showMessage(type, text) {
+        messageBox.classList.remove('hidden');
+        messageEl.textContent = text;
+        messageEl.className =
+            type === 'success'
+                ? 'bg-green-100 text-green-800 p-4 rounded-xl'
+                : 'bg-red-100 text-red-800 p-4 rounded-xl';
+
+        setTimeout(() => messageBox.classList.add('hidden'), 5000);
+    }
+</script>
+
+</body>
+</html>
+

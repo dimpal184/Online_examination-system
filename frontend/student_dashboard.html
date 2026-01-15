@@ -1,0 +1,867 @@
+<!-- 
+
+
+  <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+
+        /* ------------------ */
+        /* 1. 3D CARD EFFECT (Reused from Login) */
+        /* ------------------ */
+        .card-3d {
+            background-color: white;
+            border-radius: 12px;
+            /* Combined shadows for depth and highlight */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.7),
+                        inset 0 -3px 5px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease-out;
+        }
+        .card-3d:hover {
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+
+        /* ------------------ */
+        /* 2. BUTTON (Teal Gradient) */
+        /* ------------------ */
+        .btn-gradient {
+            /* Cyan 500 to Cyan 600 */
+            background-image: linear-gradient(to right, #06B6D4, #0891B2);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(6, 182, 212, 0.4);
+        }
+        .btn-gradient:hover {
+            box-shadow: 0 6px 15px rgba(6, 182, 212, 0.6);
+            opacity: 0.95;
+        }
+
+        /* ------------------ */
+        /* 3. INPUT FOCUS (Teal Focus Ring) */
+        /* ------------------ */
+        .input-style:focus {
+            border-color: #06B6D4;
+            outline: none;
+            box-shadow: 0 0 0 1px #06B6D4;
+        }
+        
+        /* Style for the disabled/error button */
+        .btn-disabled {
+            background-color: #fca5a5; /* Red-300 */
+            cursor: not-allowed;
+            color: #7f1d1d; /* Red-900 */
+        }
+
+        /* 🎯 UPDATED STYLE: For Expired Exams (Now a clickable button for modal) */
+        .btn-expired {
+            background-color: #f87171; /* Red-400 */
+            color: #450a0a; /* Red-950 */
+            box-shadow: 0 4px 6px rgba(248, 113, 113, 0.4);
+            transition: background-color 0.2s;
+            cursor: pointer; /* Change cursor to indicate clickability */
+        }
+        .btn-expired:hover {
+            background-color: #ef4444; /* Red-500 on hover */
+        }
+        .tag-expired {
+            background-color: #fee2e2; /* Red-100 */
+            color: #b91c1c; /* Red-700 */
+        }
+        /* ------------------ */
+        /* 4. MODAL STYLES */
+        /* ------------------ */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            border-top: 5px solid #ef4444; /* Red-500 border */
+            transform: scale(0.9);
+            animation: zoomIn 0.3s forwards;
+        }
+        @keyframes zoomIn {
+            to { transform: scale(1); }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <header class="bg-cyan-600 shadow-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13.5m0-13.5c-4.144 0-7.5 2.529-7.5 5.625S9.856 18 14 18h1.25c2.071 0 3.75 1.679 3.75 3.75V21a2 2 0 01-2 2h-12a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2v1.25c0 2.071-1.679 3.75-3.75 3.75H14c-4.144 0-7.5-2.529-7.5-5.625S9.856 3 14 3h1.25c2.071 0 3.75 1.679 3.75 3.75V21" />
+                </svg>
+                <h1 class="text-2xl text-white">ExamPro Student</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-cyan-100 font-medium">Welcome, <span id="user-name" class="font-bold text-white">Student</span></span>
+                <button id="logout-btn" class="text-red-300 hover:text-red-100 font-medium transition duration-150 ease-in-out">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-800">Student Dashboard</h2>
+        <p class="mt-2 text-gray-500">Access your exams and track your academic progress</p>
+
+        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="card-3d p-6 text-center bg-cyan-50/70 border border-cyan-200">
+                <p class="text-gray-500 font-medium text-sm">Available Exams</p>
+                <p id="available-exams-count" class="text-4xl font-bold text-cyan-600 mt-2">0</p>
+                <p class="text-gray-500 text-sm mt-1">Ready to take</p>
+            </div>
+            <div class="card-3d p-6 text-center bg-blue-50/70 border border-blue-200">
+                <p class="text-gray-500 font-medium text-sm">Completed</p>
+                <p id="completed-exams-count" class="text-4xl font-bold text-blue-600 mt-2">0</p>
+                <p class="text-gray-500 text-sm mt-1">Exams finished</p>
+            </div>
+            <div class="card-3d p-6 text-center bg-red-50/70 border border-red-200">
+                <p class="text-gray-500 font-medium text-sm">Average Score</p>
+                <p id="average-score" class="text-4xl font-bold text-red-600 mt-2">N/A</p>
+                <p class="text-gray-500 text-sm mt-1">Last 3 exams</p>
+            </div>
+            <div class="card-3d p-6 text-center bg-yellow-50/70 border border-yellow-200">
+                <p class="text-gray-500 font-medium text-sm">Study Streak</p>
+                <p id="study-streak" class="text-4xl font-bold text-yellow-600 mt-2">N/A</p>
+                <p class="text-gray-500 text-sm mt-1">Days active</p>
+            </div>
+        </div>
+        
+        <div class="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Available Exams</h3>
+                    <div class="relative w-full max-w-xs">
+                        <input type="text" placeholder="Search exams..." class="w-full pl-10 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <div id="exams-container" class="space-y-4">
+                    </div>
+            </div>
+
+            <div class="lg:col-span-1">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Recent Results</h3>
+                <div id="recent-results-container" class="space-y-4">
+                    <div class="card-3d p-4">
+                        <p class="text-sm text-gray-500">Could not load recent results.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="denied-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="modal-content bg-white p-10 max-w-lg w-full rounded-lg text-center shadow-2xl">
+            <svg class="w-16 h-16 text-red-500 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Access Denied</h1>
+            
+            <p id="denied-message" class="text-xl text-red-700 font-medium mb-6">
+                </p>
+            
+            <p class="text-gray-500 mb-8">
+                This exam is no longer available as its deadline has passed. Please check your dashboard for other active exams.
+            </p>
+
+            <button id="close-modal-btn" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 transition duration-150">
+                Close
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userNameEl = document.getElementById('user-name');
+            const availableExamsCountEl = document.getElementById('available-exams-count');
+            const examsContainer = document.getElementById('exams-container');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            // Modal elements
+            const deniedModal = document.getElementById('denied-modal');
+            const deniedMessageEl = document.getElementById('denied-message');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+
+
+            const API_BASE_URL = 'http://localhost:3000';
+
+            // --- Helper Functions ---
+
+            const getLoggedInUser = () => {
+                const user = localStorage.getItem('user');
+                return user ? JSON.parse(user) : null;
+            };
+
+            const showDeniedModal = (examTitle) => {
+                deniedMessageEl.textContent = `The exam "${examTitle}" has expired.`;
+                deniedModal.classList.remove('hidden');
+            };
+
+            // 🎯 HELPER FUNCTION: Determines the exam status, including EXPIRED check 🎯
+            const getExamStatus = (exam) => {
+                const now = new Date();
+                const deadline = exam.deadline ? new Date(exam.deadline) : null;
+
+                // 🛑 CHECK 1: Expired (Deadline passed) 🛑
+                if (deadline && now > deadline) {
+                    return {
+                        tag: 'Expired',
+                        tagClass: 'tag-expired',
+                        buttonClass: 'btn-expired btn-expired-action', // Added action class
+                        buttonText: 'Expired', 
+                        enabled: false
+                    };
+                }
+
+                // Default status (Available/Ready)
+                return {
+                    tag: 'Available',
+                    tagClass: 'bg-cyan-100 text-cyan-800',
+                    buttonClass: 'btn-gradient',
+                    buttonText: 'Start Exam',
+                    enabled: true
+                };
+            };
+
+
+            // --- Core Logic ---
+
+            // Authentication Check
+            const user = getLoggedInUser();
+            if (user && user.username) {
+                userNameEl.textContent = user.username;
+            } else {
+                window.location.href = 'student_login.html';
+            }
+
+            // Fetch exams from the backend
+            const fetchExams = async () => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/exams/published`);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const exams = await response.json();
+                    renderExams(exams);
+                } catch (error) {
+                    console.error('Error fetching exams:', error);
+                    examsContainer.innerHTML = `
+                        <div class="card-3d p-4 text-center">
+                            <p class="text-red-500 font-medium">Could not load exams. Please try again or check server connection.</p>
+                        </div>
+                    `;
+                    availableExamsCountEl.textContent = 0;
+                }
+            };
+
+            // Render exam cards 
+            const renderExams = (exams) => {
+                examsContainer.innerHTML = '';
+                let trulyAvailableCount = 0;
+
+                if (exams.length === 0) {
+                    examsContainer.innerHTML = `
+                        <div class="card-3d p-4 text-center">
+                            <p class="text-gray-500">No available exams at the moment.</p>
+                        </div>
+                    `;
+                    availableExamsCountEl.textContent = 0;
+                    return;
+                }
+
+                exams.forEach(exam => {
+                    const examStatus = getExamStatus(exam);
+                    const isExpired = examStatus.tag === 'Expired';
+                    
+                    if (examStatus.enabled) {
+                        trulyAvailableCount++;
+                    }
+
+                    const examCard = document.createElement('div');
+                    
+                    examCard.className = 'card-3d p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0';
+                    
+                    // Format duration
+                    const durationInMins = exam.duration || 60;
+                    const durationText = `${durationInMins} mins`;
+
+                    const hasValidId = exam._id && exam._id.length > 0;
+                    
+                    let actionButtonHtml;
+                    
+                    // Case 1: Active and Valid ID (Start Exam button - uses <a>)
+                    if (examStatus.enabled && hasValidId) {
+                        actionButtonHtml = `
+                            <a href="exam.html?examId=${exam._id}"
+                                class="inline-flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${examStatus.buttonClass} transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9h2m-2 4h2m2-4h2m-2 4h2m-2 4h2"></path></svg>
+                                ${examStatus.buttonText}
+                            </a>
+                        `;
+                    } else if (isExpired) {
+                        // Case 2: Expired (Now a clickable button to show modal)
+                        actionButtonHtml = `
+                            <button 
+                                data-exam-title="${exam.title}" 
+                                class="inline-flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${examStatus.buttonClass}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.332 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                ${examStatus.buttonText}
+                            </button>
+                        `;
+                    } else {
+                        // Case 3: Disabled (Missing ID) - strictly disabled button
+                        let buttonClass = 'btn-disabled';
+                        let buttonText = 'Missing ID';
+                        
+                        console.error(`Exam titled "${exam.title}" is missing an _id and cannot be started.`);
+
+                        actionButtonHtml = `
+                            <button disabled class="inline-flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${buttonClass}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.332 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                ${buttonText}
+                            </button>
+                        `;
+                    }
+
+
+                    examCard.innerHTML = `
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="text-lg font-semibold text-gray-800">${exam.title}</h4>
+                                <span class="text-xs font-medium px-2.5 py-0.5 rounded-full ${examStatus.tagClass}">${examStatus.tag}</span>
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${exam.difficulty || 'N/A'}</span>
+                            </div>
+                            <p class="text-gray-500 text-sm mt-2">${exam.subject || 'N/A'}</p>
+                            <div class="mt-3 text-sm text-gray-600 flex space-x-4">
+                                <div><strong class="font-medium">Questions:</strong> ${exam.questions ? exam.questions.length : 'N/A'}</div>
+                                <div><strong class="font-medium">Duration:</strong> ${durationText}</div>
+                            </div>
+                        </div>
+                        <div class="sm:ml-auto">
+                            ${actionButtonHtml}
+                        </div>
+                    `;
+                    examsContainer.appendChild(examCard);
+                });
+                
+                availableExamsCountEl.textContent = trulyAvailableCount;
+            };
+            
+            // --- Event Listeners ---
+
+            // Handle Expired button clicks (shows the modal)
+            examsContainer.addEventListener('click', (event) => {
+                const button = event.target.closest('.btn-expired-action');
+                if (button) {
+                    const examTitle = button.getAttribute('data-exam-title') || 'This exam';
+                    showDeniedModal(examTitle);
+                }
+            });
+
+            // Close modal button
+            closeModalBtn.addEventListener('click', () => {
+                deniedModal.classList.add('hidden');
+            });
+            
+            // Close modal if user clicks outside of it
+            deniedModal.addEventListener('click', (event) => {
+                if (event.target === deniedModal) {
+                    deniedModal.classList.add('hidden');
+                }
+            });
+
+            // Logout functionality
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('user');
+                localStorage.removeItem('userId');
+                window.location.href = 'student_login.html';
+            });
+
+            // Initial call to fetch exams
+            fetchExams();
+        });
+    </script>
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+
+        /* ------------------ */
+        /* 1. 3D CARD EFFECT */
+        /* ------------------ */
+        .card-3d {
+            background-color: white;
+            border-radius: 12px;
+            /* Combined shadows for depth and highlight */
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.7),
+                        inset 0 -3px 5px rgba(0, 0, 0, 0.03);
+            transition: all 0.3s ease-out;
+        }
+        .card-3d:hover {
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+
+        /* ------------------ */
+        /* 2. BUTTON (Teal Gradient) */
+        /* ------------------ */
+        .btn-gradient {
+            /* Cyan 500 to Cyan 600 */
+            background-image: linear-gradient(to right, #06B6D4, #0891B2);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(6, 182, 212, 0.4);
+        }
+        .btn-gradient:hover {
+            box-shadow: 0 6px 15px rgba(6, 182, 212, 0.6);
+            opacity: 0.95;
+        }
+
+        /* ------------------ */
+        /* 3. INPUT FOCUS (Teal Focus Ring) */
+        /* ------------------ */
+        .input-style:focus {
+            border-color: #06B6D4;
+            outline: none;
+            box-shadow: 0 0 0 1px #06B6D4;
+        }
+        
+        /* Style for the disabled/error button */
+        .btn-disabled {
+            background-color: #fca5a5; /* Red-300 */
+            cursor: not-allowed;
+            color: #7f1d1d; /* Red-900 */
+        }
+
+        /* Expired Exams button (triggers modal) */
+        .btn-expired {
+            background-color: #f87171; /* Red-400 */
+            color: #450a0a; /* Red-950 */
+            box-shadow: 0 4px 6px rgba(248, 113, 113, 0.4);
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        .btn-expired:hover {
+            background-color: #ef4444; /* Red-500 on hover */
+        }
+        .tag-expired {
+            background-color: #fee2e2; /* Red-100 */
+            color: #b91c1c; /* Red-700 */
+        }
+        
+        /* Pending Exams button (triggers modal) */
+        .btn-pending {
+            background-color: #fcd34d; /* Amber-300 */
+            color: #78350f; /* Amber-900 */
+            box-shadow: 0 4px 6px rgba(252, 211, 77, 0.4);
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        .btn-pending:hover {
+             background-color: #fbbf24; /* Amber-400 on hover */
+        }
+        .tag-pending {
+            background-color: #fef3c7; /* Amber-100 */
+            color: #b45309; /* Amber-700 */
+        }
+
+        /* 4. MODAL STYLES */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            border-top: 5px solid #ef4444; /* Red-500 border */
+            transform: scale(0.9);
+            animation: zoomIn 0.3s forwards;
+        }
+        @keyframes zoomIn {
+            to { transform: scale(1); }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <header class="bg-cyan-600 shadow-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13.5m0-13.5c-4.144 0-7.5 2.529-7.5 5.625S9.856 18 14 18h1.25c2.071 0 3.75 1.679 3.75 3.75V21a2 2 0 01-2 2h-12a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2v1.25c0 2.071-1.679 3.75-3.75 3.75H14c-4.144 0-7.5-2.529-7.5-5.625S9.856 3 14 3h1.25c2.071 0 3.75 1.679 3.75 3.75V21" />
+                </svg>
+                <h1 class="text-2xl text-white">ExamPro Student</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-cyan-100 font-medium">Welcome, <span id="user-name" class="font-bold text-white">Student</span></span>
+                <button id="logout-btn" class="text-red-300 hover:text-red-100 font-medium transition duration-150 ease-in-out">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-gray-800">Student Dashboard</h2>
+        <p class="mt-2 text-gray-500">Access your exams and track your academic progress</p>
+
+        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="card-3d p-6 text-center bg-cyan-50/70 border border-cyan-200">
+                <p class="text-gray-500 font-medium text-sm">Available Exams</p>
+                <p id="available-exams-count" class="text-4xl font-bold text-cyan-600 mt-2">0</p>
+                <p class="text-gray-500 text-sm mt-1">Ready to take</p>
+            </div>
+            <div class="card-3d p-6 text-center bg-blue-50/70 border border-blue-200">
+                <p class="text-gray-500 font-medium text-sm">Completed</p>
+                <p id="completed-exams-count" class="text-4xl font-bold text-blue-600 mt-2">0</p>
+                <p class="text-gray-500 text-sm mt-1">Exams finished</p>
+            </div>
+            <div class="card-3d p-6 text-center bg-red-50/70 border border-red-200">
+                <p class="text-gray-500 font-medium text-sm">Average Score</p>
+                <p id="average-score" class="text-4xl font-bold text-red-600 mt-2">N/A</p>
+                <p class="text-gray-500 text-sm mt-1">Last 3 exams</p>
+            </div>
+            <div class="card-3d p-6 text-center bg-yellow-50/70 border border-yellow-200">
+                <p class="text-gray-500 font-medium text-sm">Study Streak</p>
+                <p id="study-streak" class="text-4xl font-bold text-yellow-600 mt-2">N/A</p>
+                <p class="text-gray-500 text-sm mt-1">Days active</p>
+            </div>
+        </div>
+        
+        <div class="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">Available Exams</h3>
+                    <div class="relative w-full max-w-xs">
+                        <input type="text" placeholder="Search exams..." class="w-full pl-10 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <div id="exams-container" class="space-y-4">
+                    </div>
+            </div>
+
+            <div class="lg:col-span-1">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Recent Results</h3>
+                <div id="recent-results-container" class="space-y-4">
+                    <div class="card-3d p-4">
+                        <p class="text-sm text-gray-500">Could not load recent results.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="denied-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="modal-content bg-white p-10 max-w-lg w-full rounded-lg text-center shadow-2xl">
+            <svg id="modal-icon" class="w-16 h-16 text-red-500 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Access Restricted</h1>
+            
+            <p id="denied-message" class="text-xl text-red-700 font-medium mb-6">
+                </p>
+            
+            <p id="denied-explanation" class="text-gray-500 mb-8">
+                </p>
+
+            <button id="close-modal-btn" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-cyan-600 hover:bg-cyan-700 transition duration-150">
+                Close
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userNameEl = document.getElementById('user-name');
+            const availableExamsCountEl = document.getElementById('available-exams-count');
+            const examsContainer = document.getElementById('exams-container');
+            const logoutBtn = document.getElementById('logout-btn');
+
+            // Modal elements
+            const deniedModal = document.getElementById('denied-modal');
+            const deniedMessageEl = document.getElementById('denied-message');
+            const deniedExplanationEl = document.getElementById('denied-explanation');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const modalIconEl = document.getElementById('modal-icon');
+
+
+            const API_BASE_URL = 'http://localhost:3000';
+
+            // --- Helper Functions ---
+
+            const getLoggedInUser = () => {
+                const user = localStorage.getItem('user');
+                return user ? JSON.parse(user) : null;
+            };
+
+            const showDeniedModal = (examTitle, statusType, timeInfo = '') => {
+                let iconColor, explanationText;
+
+                if (statusType === 'expired') {
+                    iconColor = 'text-red-500';
+                    deniedMessageEl.textContent = `The exam "${examTitle}" has expired.`;
+                    explanationText = 'This exam is no longer available as its deadline has passed. Please check your dashboard for other active exams.';
+                } else if (statusType === 'pending') {
+                    iconColor = 'text-yellow-500';
+                    deniedMessageEl.textContent = `The exam "${examTitle}" is not yet available.`;
+                    explanationText = `The exam will start ${timeInfo}. Please check back at that time.`;
+                }
+
+                modalIconEl.className = `w-16 h-16 mx-auto mb-6 ${iconColor}`;
+                deniedExplanationEl.textContent = explanationText;
+                
+                // Change the border color based on the status
+                const modalContent = deniedModal.querySelector('.modal-content');
+                modalContent.style.borderTop = statusType === 'pending' ? '5px solid #fbbf24' : '5px solid #ef4444';
+
+                deniedModal.classList.remove('hidden');
+            };
+
+            // 🎯 CRITICAL LOGIC UPDATE 🎯
+            const getExamStatus = (exam) => {
+                const now = new Date();
+                const startTime = exam.startTime ? new Date(exam.startTime) : null;
+                // We use duration to calculate the absolute end time if deadline (endTime) isn't explicit
+                const durationInMs = (exam.duration || 60) * 60000;
+                
+                // Use explicit deadline if available, otherwise calculate using start time + duration
+                const deadline = exam.deadline 
+                                 ? new Date(exam.deadline) 
+                                 : (startTime ? new Date(startTime.getTime() + durationInMs) : null);
+
+                // --- 1. Check if the exam has EXPIRED ---
+                if (deadline && now > deadline) {
+                    return {
+                        tag: 'Expired',
+                        tagClass: 'tag-expired',
+                        buttonClass: 'btn-expired btn-expired-action',
+                        buttonText: 'Expired', 
+                        enabled: false,
+                        statusType: 'expired'
+                    };
+                }
+
+                // --- 2. Check if the exam is PENDING (Start time has not yet arrived) ---
+                if (startTime && now < startTime) {
+                    const formattedStartTime = startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
+                    return {
+                        tag: 'Pending',
+                        tagClass: 'tag-pending',
+                        buttonClass: 'btn-pending btn-pending-action',
+                        buttonText: 'Starts Soon', 
+                        enabled: false,
+                        statusType: 'pending',
+                        timeInfo: `on ${formattedStartTime}`
+                    };
+                }
+
+                // --- 3. Exam is AVAILABLE (It's between startTime and deadline) ---
+                return {
+                    tag: 'Available',
+                    tagClass: 'bg-cyan-100 text-cyan-800',
+                    buttonClass: 'btn-gradient',
+                    buttonText: 'Start Exam',
+                    enabled: true,
+                    statusType: 'available'
+                };
+            };
+
+
+            // --- Core Logic ---
+
+            // Authentication Check
+            const user = getLoggedInUser();
+            if (user && user.username) {
+                userNameEl.textContent = user.username;
+            } else {
+                window.location.href = 'student_login.html';
+            }
+
+            // Fetch exams from the backend
+            const fetchExams = async () => {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/exams/published`);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const exams = await response.json();
+                    renderExams(exams);
+                } catch (error) {
+                    console.error('Error fetching exams:', error);
+                    examsContainer.innerHTML = `
+                        <div class="card-3d p-4 text-center">
+                            <p class="text-red-500 font-medium">Could not load exams. Please try again or check server connection.</p>
+                        </div>
+                    `;
+                    availableExamsCountEl.textContent = 0;
+                }
+            };
+
+            // Render exam cards 
+            const renderExams = (exams) => {
+                examsContainer.innerHTML = '';
+                let trulyAvailableCount = 0;
+
+                if (exams.length === 0) {
+                    examsContainer.innerHTML = `
+                        <div class="card-3d p-4 text-center">
+                            <p class="text-gray-500">No available exams at the moment.</p>
+                        </div>
+                    `;
+                    availableExamsCountEl.textContent = 0;
+                    return;
+                }
+
+                exams.forEach(exam => {
+                    const examStatus = getExamStatus(exam);
+                    const isRestricted = !examStatus.enabled;
+                    
+                    if (examStatus.enabled) {
+                        trulyAvailableCount++;
+                    }
+
+                    const examCard = document.createElement('div');
+                    
+                    examCard.className = 'card-3d p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0';
+                    
+                    // Format duration
+                    const durationInMins = exam.duration || 60;
+                    const durationText = `${durationInMins} mins`;
+
+                    const hasValidId = exam._id && exam._id.length > 0;
+                    
+                    let actionButtonHtml;
+                    
+                    // Case 1: Available
+                    if (examStatus.enabled && hasValidId) {
+                        actionButtonHtml = `
+                            <a href="exam.html?examId=${exam._id}"
+                                class="inline-flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${examStatus.buttonClass} transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9h2m-2 4h2m2-4h2m-2 4h2m-2 4h2"></path></svg>
+                                ${examStatus.buttonText}
+                            </a>
+                        `;
+                    } else if (isRestricted) {
+                        // Case 2 & 3: Expired or Pending (Button to show modal)
+                        actionButtonHtml = `
+                            <button 
+                                data-exam-title="${exam.title}" 
+                                data-status-type="${examStatus.statusType}"
+                                data-time-info="${examStatus.timeInfo || ''}"
+                                class="inline-flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${examStatus.buttonClass} restricted-action">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.332 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                ${examStatus.buttonText}
+                            </button>
+                        `;
+                    } else {
+                        // Case 4: Disabled (Missing ID)
+                        let buttonClass = 'btn-disabled';
+                        let buttonText = 'Missing ID';
+                        
+                        console.error(`Exam titled "${exam.title}" is missing an _id and cannot be started.`);
+
+                        actionButtonHtml = `
+                            <button disabled class="inline-flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${buttonClass}">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.332 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                ${buttonText}
+                            </button>
+                        `;
+                    }
+
+
+                    examCard.innerHTML = `
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="text-lg font-semibold text-gray-800">${exam.title}</h4>
+                                <span class="text-xs font-medium px-2.5 py-0.5 rounded-full ${examStatus.tagClass}">${examStatus.tag}</span>
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded-full">${exam.difficulty || 'N/A'}</span>
+                            </div>
+                            <p class="text-gray-500 text-sm mt-2">${exam.subject || 'N/A'}</p>
+                            <div class="mt-3 text-sm text-gray-600 flex space-x-4">
+                                <div><strong class="font-medium">Questions:</strong> ${exam.questions ? exam.questions.length : 'N/A'}</div>
+                                <div><strong class="font-medium">Duration:</strong> ${durationText}</div>
+                            </div>
+                        </div>
+                        <div class="sm:ml-auto">
+                            ${actionButtonHtml}
+                        </div>
+                    `;
+                    examsContainer.appendChild(examCard);
+                });
+                
+                availableExamsCountEl.textContent = trulyAvailableCount;
+            };
+            
+            // --- Event Listeners ---
+
+            // Handle Expired/Pending button clicks (shows the modal)
+            examsContainer.addEventListener('click', (event) => {
+                const button = event.target.closest('.restricted-action');
+                if (button) {
+                    const examTitle = button.getAttribute('data-exam-title') || 'This exam';
+                    const statusType = button.getAttribute('data-status-type');
+                    const timeInfo = button.getAttribute('data-time-info');
+                    showDeniedModal(examTitle, statusType, timeInfo);
+                }
+            });
+
+            // Close modal button
+            closeModalBtn.addEventListener('click', () => {
+                deniedModal.classList.add('hidden');
+            });
+            
+            // Close modal if user clicks outside of it
+            deniedModal.addEventListener('click', (event) => {
+                if (event.target === deniedModal) {
+                    deniedModal.classList.add('hidden');
+                }
+            });
+
+            // Logout functionality
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('user');
+                localStorage.removeItem('userId');
+                window.location.href = 'student_login.html';
+            });
+
+            // Initial call to fetch exams
+            fetchExams();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles and custom font */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f7f9fb; /* Soft background */
+            position: relative;
+            overflow: hidden; /* Hide the background overflow */
+        }
+
+        /* ------------------ */
+        /* 1. BACKGROUND EFFECT */
+        /* ------------------ */
+        .bg-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+             box-shadow:25px black;
+        }
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.15; /* Subtle opacity */
+            filter: blur(80px); /* Heavy blur for a gentle glow */
+            animation: move 20s infinite alternate;
+        }
+
+        /* /* .shape-1 { background: #4f46e5; width: 400px; height: 400px; top: 10%; left: 10%; } */
+         .shape-2 { background: #040d1d; width: 300px; height: 300px; bottom: 5%; right: 15%; animation-delay: 5s; }  
+         /* .shape-3 { background: #1e90ff; width: 500px; height: 500px; top: 70%; left: 50%; animation-delay: 10s; }  */
+
+        @keyframes move {
+            from { transform: translate(0, 0) rotate(0deg); }
+            to { transform: translate(50px, 50px) rotate(10deg); }
+        }
+
+        /* ------------------ */
+        /* 2. CARD & BUTTON */
+        /* ------------------ */
+        .login-card {
+            z-index: 10; /* Bring card above background effect */
+            /* Enhanced, multi-level shadow for depth */
+         /* box-shadow: 0 25px 50px -12px rgba(36, 35, 35, 0.25), 0 0 10px rgba(79, 79, 80, 0.1);   */
+        }
+
+        .btn-gradient {
+            background-image: linear-gradient(to right, #2e2899, #1b61d1); /* Simplified gradient for consistency */
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 52, 56, 0.4); /* Blue shadow for lift */
+        }
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(79, 70, 229, 0.6); 
+            opacity: 0.95;
+        }
+
+        /* ------------------ */
+        /* 3. INPUT FIELDS */
+        /* ------------------ */
+        .input-style {
+            transition: border-color 0.3s, box-shadow 0.3s;
+            border-color: #d1d5db; /* Lighter default border */
+        }
+        .input-style:focus {
+            border-color: #4f46e5; /* Primary color border on focus */
+            outline: none;
+            box-shadow: 0 0 0 1px #4f46e5; /* Thin, elegant focus ring */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="w-full max-w-2xl text-center mb-4 relative z-10">
+        <div class="flex flex-col items-center space-y-3">
+            <h1 class="flex items-center justify-center text-3xl sm:text-4xl  text-black-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                ExamPortal
+            </h1>
+            <p class="text-gray-400 font-medium tracking-wide">Education Management System</p>
+        </div>
+        <h2 class="text-2xl mt-3 text-black-700">Administrator Access</h2>
+        <p class="mt-2 text-gray-500">Secure login to the exam management console</p>
+    </div>
+
+    <div id="form-container" class="login-card w-full max-w-md bg-white rounded-xl p-8 sm:p-10 relative z-10 border-2 border-blue-800">
+        <div id="login-form-div">
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Sign In to Dashboard</h3>
+                <p class="mt-1 text-gray-500 text-sm">Enter your administrator credentials to access the system</p>
+            </div>
+            <form id="admin-login-form" class="space-y-6">
+                <div>
+                    <label for="admin-email-login" class="block text-sm font-medium text-gray-700">Username (Email)</label>
+                    <input type="email" id="admin-email-login" name="email" required 
+                           class="mt-1 block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm input-style">
+                </div>
+                <div>
+                    <label for="admin-password-login" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="admin-password-login" name="password" required 
+                           class="mt-1 block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm input-style" autocomplete="current-password">
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-darkblue-800 focus:ring-indigo-500 border-gray-300 rounded">
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-900">Remember me</label>
+                    </div>
+                    <div class="text-sm">
+                        <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500 transition duration-150">Forgot password?</a>
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex items-center justify-center py-2.5 px-4 rounded-lg shadow-md text-sm font-semibold text-white btn-gradient focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500/50">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                        Access Dashboard
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="signup-form-div" class="hidden">
+            <div class="text-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Admin Sign Up</h3>
+                <p class="mt-1 text-gray-500 text-sm">Create a new administrator account</p>
+            </div>
+            <form id="admin-signup-form" class="space-y-6">
+                <div>
+                    <label for="admin-email-signup" class="block text-sm font-medium text-gray-700">Username (Email)</label>
+                    <input type="email" id="admin-email-signup" name="email" required 
+                           class="mt-1 block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm input-style">
+                </div>
+                <div>
+                    <label for="admin-password-signup" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="admin-password-signup" name="password" required 
+                           class="mt-1 block w-full px-4 py-2 border rounded-lg shadow-sm sm:text-sm input-style" autocomplete="new-password">
+                </div>
+                <div>
+                    <button type="submit" class="w-full flex items-center justify-center py-2.5 px-4 rounded-lg shadow-md text-sm font-semibold text-white btn-gradient focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500/50">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                        Sign Up
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-6 text-center text-sm text-gray-500">
+            <span id="toggle-signup-link">
+                Don't have an admin account? <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500 transition duration-150">Sign Up &rarr;</a>
+            </span>
+            <span id="toggle-login-link" class="hidden">
+                Already have an admin account? <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500 transition duration-150">Log In &rarr;</a>
+            </span>
+        </div>
+
+        <div class="mt-3 text-center text-sm text-gray-500">
+            Need student access? <a href="student_login.html" class="font-medium text-blue-600 hover:text-blue-500 transition duration-150">Student Portal &rarr;</a>
+        </div>
+    </div>
+
+    <div id="message-box" class="mt-6 w-full max-w-md px-4 py-3 rounded-lg text-center font-medium relative z-10 hidden"></div>
+
+    <script>
+        // *** LOGIC AND FUNCTIONALITY REMAINS UNCHANGED ***
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginFormDiv = document.getElementById('login-form-div');
+            const signupFormDiv = document.getElementById('signup-form-div');
+            const toggleSignupLink = document.getElementById('toggle-signup-link');
+            const toggleLoginLink = document.getElementById('toggle-login-link');
+            const messageBox = document.getElementById('message-box');
+            const loginForm = document.getElementById('admin-login-form');
+            const signupForm = document.getElementById('admin-signup-form');
+
+            const BASE_URL = ''; 
+
+            function showMessage(message, type) {
+                messageBox.textContent = message;
+                messageBox.className = "mt-6 w-full max-w-md px-4 py-3 rounded-lg text-center font-medium relative z-10";
+                if (type === 'success') messageBox.classList.add('bg-green-100','text-green-700');
+                else if (type === 'error') messageBox.classList.add('bg-red-100','text-red-700');
+                else messageBox.classList.add('bg-blue-100','text-blue-700'); 
+                messageBox.classList.remove('hidden');
+            }
+
+            function validateEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            toggleSignupLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginFormDiv.classList.add('hidden');
+                signupFormDiv.classList.remove('hidden');
+                toggleSignupLink.classList.add('hidden');
+                toggleLoginLink.classList.remove('hidden');
+                messageBox.classList.add('hidden');
+            });
+
+            toggleLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginFormDiv.classList.remove('hidden');
+                signupFormDiv.classList.add('hidden');
+                toggleSignupLink.classList.remove('hidden');
+                toggleLoginLink.classList.add('hidden');
+                messageBox.classList.add('hidden');
+            });
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('admin-email-login').value.trim();
+                const password = document.getElementById('admin-password-login').value.trim();
+
+                if (!validateEmail(email)) return showMessage("Enter a valid email.", "error");
+                if (password.length < 6) return showMessage("Password must be at least 6 characters.", "error");
+
+                showMessage("Logging in...", "info");
+
+                try {
+                    const response = await fetch(`${BASE_URL}/login`, {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ username: email, password })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showMessage(data.message || "Login successful!", "success");
+                        setTimeout(() => window.location.href = 'admin_dashboard.html', 1000);
+                    } else {
+                        showMessage(data.message || "Login failed.", "error");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showMessage("Server error. Try again later.", "error");
+                }
+            });
+
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('admin-email-signup').value.trim();
+                const password = document.getElementById('admin-password-signup').value.trim();
+
+                if (!validateEmail(email)) return showMessage("Enter a valid email.", "error");
+                if (password.length < 6) return showMessage("Password must be at least 6 characters.", "error");
+
+                showMessage("Creating account...", "info");
+
+                try {
+                    const response = await fetch(`${BASE_URL}/signup`, {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ username: email, password })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        showMessage(data.message || "Sign-up successful! Please log in.", "success");
+                        setTimeout(() => toggleLoginLink.click(), 1200);
+                    } else {
+                        showMessage(data.message || "Sign-up failed.", "error");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showMessage("Server error. Try again later.", "error");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

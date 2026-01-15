@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Exams | Student Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7f9fc; /* Light blue/grey background */
+        }
+        .exam-card {
+            transition: all 0.3s ease;
+        }
+        .exam-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-4">
+
+    <div class="bg-white p-8 md:p-10 rounded-2xl shadow-2xl w-full max-w-4xl border border-indigo-100 mt-8">
+        
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900">Available Exams 🎓</h1>
+            <a href="student_login.html" class="text-sm text-red-500 hover:text-red-700 font-medium">Logout</a>
+        </div>
+        
+        <div id="exams-container" class="space-y-6">
+            <p id="loading-message" class="text-center text-gray-500 py-4">Loading available exams...</p>
+        </div>
+
+        <div id="message-box" class="mt-6 hidden">
+            <div id="message" class="rounded-xl p-4 text-center font-medium shadow-md"></div>
+        </div>
+    </div>
+
+    <script>
+        const examsContainer = document.getElementById('exams-container');
+        const loadingMessage = document.getElementById('loading-message');
+        const messageBox = document.getElementById('message-box');
+        const messageEl = document.getElementById('message');
+
+        function showMessage(type, text) {
+            messageBox.classList.remove('hidden');
+            messageEl.textContent = text;
+            if (type === 'success') {
+                messageEl.className = 'bg-green-100 text-green-800 p-4 rounded-xl';
+            } else {
+                messageEl.className = 'bg-red-100 text-red-800 p-4 rounded-xl';
+            }
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 5000);
+        }
+
+        async function fetchExams() {
+            try {
+                // NOTE: Changed to the /published endpoint for student view as per best practice
+                // If you intend for students to see ALL exams regardless of status, use /api/exams
+                const response = await fetch(`http://localhost:3000/api/exams/published`); 
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch: ${response.statusText}`);
+                }
+                
+                const exams = await response.json();
+
+                loadingMessage.style.display = 'none';
+                examsContainer.innerHTML = ''; // Clear the initial loading message
+
+                if (exams.length === 0) {
+                    examsContainer.innerHTML = '<p class="text-center text-lg text-gray-500 border border-dashed border-gray-300 p-8 rounded-xl">There are no currently published exams available. Please check back later.</p>';
+                    return;
+                }
+
+                exams.forEach(exam => {
+                    const examCard = document.createElement('div');
+                    // Enhanced styling for the exam card
+                    examCard.className = 'exam-card bg-white p-6 rounded-xl shadow-lg border border-indigo-100 cursor-pointer';
+                    
+                    // Logic redirecting to the exam page
+                    examCard.onclick = () => {
+                        window.location.href = `exam.html?examId=${exam._id}`; // Changed to exam.html based on your previous code
+                    };
+                    
+                    // Determine color for difficulty tag
+                    let difficultyColor = 'bg-blue-100 text-blue-800';
+                    if (exam.difficulty === 'Easy') difficultyColor = 'bg-green-100 text-green-800';
+                    else if (exam.difficulty === 'Hard') difficultyColor = 'bg-red-100 text-red-800';
+
+                    // Format deadline
+                    const deadlineText = exam.deadline 
+                        ? `<p class="flex items-center text-red-600 font-medium">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Deadline: ${new Date(exam.deadline).toLocaleDateString()}
+                           </p>` 
+                        : '';
+
+                    const examHtml = `
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-2xl font-bold text-gray-900">${exam.title}</h3>
+                            <span class="text-xs font-semibold px-3 py-1 rounded-full ${difficultyColor} capitalize">${exam.difficulty}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-4">${exam.description || 'No description provided.'}</p>
+                        
+                        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 border-t pt-4">
+                            <p class="font-medium flex items-center"><span class="text-indigo-500 mr-2">📚</span> Subject: <span class="ml-1 font-semibold">${exam.subject}</span></p>
+                            <p class="font-medium flex items-center"><span class="text-indigo-500 mr-2">⏱️</span> Duration: <span class="ml-1 font-semibold">${exam.duration} min</span></p>
+                            <p class="font-medium flex items-center"><span class="text-indigo-500 mr-2">🔢</span> Attempts Left: <span class="ml-1 font-semibold">${exam.maxAttempts || 'N/A'}</span></p>
+                            ${deadlineText}
+                        </div>
+                        
+                        <div class="mt-6 flex justify-end">
+                            <button class="px-6 py-2 bg-indigo-600 text-white text-base font-medium rounded-full hover:bg-indigo-700 transition-colors duration-300 shadow-lg shadow-indigo-300/50">
+                                Start Exam &rarr;
+                            </button>
+                        </div>
+                    `;
+                    examCard.innerHTML = examHtml;
+                    examsContainer.appendChild(examCard);
+                });
+
+            } catch (error) {
+                console.error('Error fetching exams:', error);
+                loadingMessage.textContent = `Failed to load exams: ${error.message}`;
+                loadingMessage.className = 'text-center text-lg text-red-600 py-8';
+            }
+        }
+
+        fetchExams();
+    </script>
+</body>
+</html>

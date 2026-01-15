@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Exam: Loading...</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+
+        body {
+
+            font-family: 'Inter', sans-serif;
+
+            background-color: #eef2ff; /* Light, calming background */
+
+            color: #1e293b;
+
+        }
+
+        .card {
+
+            background-color: white;
+
+            border-radius: 16px;
+
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08), 0 3px 6px rgba(0, 0, 0, 0.03);
+
+            transition: transform 0.3s ease;
+
+        }
+
+        .option-label {
+
+            transition: all 0.2s;
+
+        }
+
+        .option-label:hover {
+
+            transform: translateX(5px);
+
+            background-color: #f0f4ff;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div id="app" class="flex items-center justify-center min-h-screen p-4">
+
+        <div class="w-full max-w-2xl">
+
+            <div id="loader" class="text-center text-lg font-medium text-indigo-600 py-10">
+
+                <svg class="animate-spin h-6 w-6 mr-3 inline text-indigo-500" viewBox="0 0 24 24">
+
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+
+                </svg>
+
+                Loading exam details...
+
+            </div>
+
+
+
+            <div id="access-denied-message" class="card p-10 hidden border-4 border-yellow-500 bg-yellow-50">
+
+                <div class="text-center">
+
+                    <svg class="w-16 h-16 mx-auto mb-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.332 16c-.77 1.333.192 3 1.732 3z"></path>
+
+                    </svg>
+
+                    <h2 class="text-3xl font-extrabold mb-4 text-yellow-700">Access Restricted</h2>
+
+                    <p id="denial-details" class="text-lg font-medium text-yellow-800"></p>
+
+                    <div class="mt-8">
+
+                        <a href="student_dashboard.html" class="inline-block px-8 py-3 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition duration-300 shadow-xl shadow-indigo-300 text-base">
+
+                            Go to Dashboard
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div id="exam-container" class="card p-8 hidden">
+
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-indigo-100 pb-4">
+
+                    <h1 id="exam-title" class="text-3xl font-extrabold text-indigo-700"></h1>
+
+                    <div class="mt-4 sm:mt-0 bg-indigo-50 px-4 py-2 rounded-full border border-indigo-200">
+
+                        <span class="text-sm font-semibold text-indigo-600">Time Remaining: </span>
+
+                        <span id="exam-timer" class="text-xl font-bold text-indigo-700"></span>
+
+                    </div>
+
+                </div>
+
+
+
+                <div id="question-container" class="space-y-6">
+
+                </div>
+
+                
+
+                <div class="flex justify-between mt-8 pt-4 border-t border-gray-100">
+
+                    <button id="prev-btn" class="px-6 py-2 bg-gray-300 text-gray-700 font-semibold rounded-full hover:bg-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm shadow-md">
+
+                        &larr; Previous
+
+                    </button>
+
+                    <button id="next-btn" class="px-8 py-2 bg-indigo-600 text-white font-semibold rounded-full hover:bg-indigo-700 transition-colors text-sm shadow-lg shadow-indigo-200">
+
+                        Next &rarr;
+
+                    </button>
+
+                    <button id="submit-btn" class="px-8 py-2 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 transition-colors hidden text-sm shadow-lg shadow-green-200">
+
+                        Submit Exam
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <div id="message-container" class="card p-10 hidden border-4 border-green-300 bg-green-50">
+
+                <div class="text-center">
+
+                    <svg class="w-16 h-16 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+
+                    </svg>
+
+                    <h2 class="text-3xl font-extrabold mb-4 text-green-700">Exam Submitted! </h2>
+
+                    <p id="submission-message" class="text-lg font-medium text-green-800">Your exam has been submitted successfully.</p>
+
+                    
+
+                    <div class="mt-8">
+
+                        <a href="student_dashboard.html" class="inline-block px-8 py-3 bg-indigo-600 text-white font-bold rounded-full hover:bg-indigo-700 transition duration-300 shadow-xl shadow-indigo-300 text-base">
+
+                            Go to Dashboard
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+    // UI Elements
+    const examContainer = document.getElementById('exam-container');
+    const loader = document.getElementById('loader');
+    const examTitle = document.getElementById('exam-title');
+    const examTimer = document.getElementById('exam-timer');
+    const questionContainer = document.getElementById('question-container');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const messageContainer = document.getElementById('message-container');
+    const submissionMessage = document.getElementById('submission-message');
+    // ADDED: UI elements for access denial
+    const accessDeniedMessage = document.getElementById('access-denied-message');
+    const denialDetails = document.getElementById('denial-details');
+    
+    // State Variables
+    let examData = null;
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let answers = {}; // Key is question index, Value is the selected option's KEY (A, B, C, etc.)
+    let timerInterval = null;
+    let timeLeft = 0;
+
+    // Function to parse the examId from the URL
+    const getExamId = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('examId');
+    };
+
+    // Function to render a single question
+    const renderQuestion = () => {
+        questionContainer.innerHTML = '';
+        const question = questions[currentQuestionIndex];
+        if (!question) return;
+        
+        // Get the MongoDB ID for the question
+        const qId = question._id || question.id;
+        // Define the letters for options (used as the value to match the database)
+        const optionLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+        const questionCard = document.createElement('div');
+        questionCard.classList.add('card', 'p-6', 'border-2', 'border-indigo-50', 'bg-gray-50');
+        questionCard.innerHTML = `
+            <div class="mb-5 border-b border-gray-200 pb-3" data-question-id="${qId}">
+                <p class="text-base font-bold text-indigo-600">Question ${currentQuestionIndex + 1} of ${questions.length}</p>
+                <h3 class="text-xl font-semibold text-gray-800 mt-2">${question.text || question.questionText || 'Question Text Missing'}</h3>
+            </div>
+            <div class="space-y-3">
+                ${(question.options || []).map((option, index) => {
+                    const optionKey = optionLetters[index]; // 'A' for index 0, 'B' for index 1, etc.
+                    const isChecked = answers[currentQuestionIndex] === optionKey; // Check state based on stored key
+                    
+                    return `
+                    <label class="option-label flex items-center p-4 border ${isChecked ? 'border-indigo-400 bg-indigo-50 shadow-md' : 'border-gray-200 bg-white'} rounded-xl cursor-pointer transition-colors duration-200">
+                        <input type="radio"
+                                    name="question-${currentQuestionIndex}"
+                                    value="${optionKey}"  class="form-radio text-indigo-600 h-5 w-5 focus:ring-indigo-500"
+                                    ${isChecked ? 'checked' : ''}>
+                        <span class="ml-4 text-gray-800 font-medium">${option}</span>
+                    </label>
+                    `;
+                }).join('')}
+            </div>
+        `;
+        questionContainer.appendChild(questionCard);
+
+        // Add event listener for radio button changes
+        const radioButtons = questionCard.querySelectorAll(`input[name="question-${currentQuestionIndex}"]`);
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                // Store the selected option's value (which is now 'A', 'B', etc.)
+                answers[currentQuestionIndex] = e.target.value;
+                // Since the label classes don't automatically update on change,
+                // you might still need a manual update or re-render here for perfect visuals.
+            });
+        });
+
+        updateNavigationButtons();
+    };
+
+    // Function to update the visibility of navigation buttons
+    const updateNavigationButtons = () => {
+        // Prev button is disabled only on the first question
+        prevBtn.disabled = currentQuestionIndex === 0;
+
+        const isLastQuestion = currentQuestionIndex === questions.length - 1;
+
+        if (isLastQuestion) {
+            // On the last question, hide 'Next' and show 'Submit'
+            nextBtn.classList.add('hidden');
+            submitBtn.classList.remove('hidden');
+        } else {
+            // For all other questions, show 'Next' and hide 'Submit'
+            nextBtn.classList.remove('hidden');
+            submitBtn.classList.add('hidden');
+        }
+    };
+
+    // Function to start the countdown timer
+    const startTimer = (duration) => {
+        timeLeft = duration * 60; // Duration is in minutes
+
+        timerInterval = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            examTimer.textContent = timeStr;
+            
+            if (timeLeft <= 60) {
+                examTimer.classList.add('text-red-600', 'font-extrabold');
+            }
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                autoSubmitExam();
+            }
+            timeLeft--;
+        }, 1000);
+    };
+
+    // Function to submit the exam automatically when time runs out
+    const autoSubmitExam = () => {
+        submissionMessage.textContent = 'Time has expired. Your exam is being submitted automatically.';
+        submitExam();
+    };
+    
+    // Function to submit the exam
+    const submitExam = async () => {
+        clearInterval(timerInterval);
+        examContainer.classList.add('hidden');
+        loader.classList.remove('hidden');
+        loader.textContent = 'Submitting your exam and calculating score... ';
+
+        try {
+            const examId = getExamId();
+            
+            // 🎯 FIX: Retrieve User ID safely from localStorage 🎯
+            let userId = localStorage.getItem("userId");
+            
+            // Fallback for user object storage, if applicable (prevents undefined error)
+            if (!userId) {
+                try {
+                    const user = JSON.parse(localStorage.getItem("user"));
+                    userId = user ? (user._id || user.id) : null;
+                } catch (e) {
+                    // Ignore parsing error if it's not JSON
+                }
+            }
+            
+            if (!userId) {
+                throw new Error("User ID missing. Please log in again.");
+            }
+
+            // Transform answers into an array of objects
+            const answersArray = questions.map((q, index) => {
+                const selectedOption = answers[index] || null;
+
+                return {
+                    questionId: q._id || q.id,
+                    selectedOption: selectedOption // Sends 'A', 'B', 'C', etc.
+                };
+            });
+
+            const submissionPayload = {
+                examId: examId,
+                studentId: userId, // Use the safely retrieved userId
+                answers: answersArray,
+                submittedAt: Date.now()
+            };
+
+            const response = await fetch('/api/results', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(submissionPayload)
+            });
+
+            if (!response.ok) {
+                // Check if it's a 4xx error with JSON body
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                        const errorJson = await response.json();
+                        throw new Error(errorJson.message || `Submission failed with status ${response.status}.`);
+                } else {
+                    // Handle non-JSON or generic server error
+                    throw new Error(`Failed to submit exam. Server responded with status: ${response.status}`);
+                }
+            }
+            
+            const result = await response.json();
+            
+            loader.classList.add('hidden');
+            messageContainer.classList.remove('hidden');
+
+            // Display the score prominently on the result card
+            const scoreDisplay = result.score !== undefined ? `<p class="text-5xl font-extrabold my-6 text-green-700">${result.score}%</p>` : '';
+            
+            submissionMessage.innerHTML = `
+                ${result.message || 'Your exam has been submitted successfully.'}
+                ${scoreDisplay}
+                <p class="text-base text-green-700 mt-4">Thank you for completing the assessment.</p>
+            `;
+
+        } catch (error) {
+            console.error('Submission failed:', error);
+            loader.classList.add('hidden');
+            messageContainer.classList.remove('hidden');
+            // Style error message as a warning/failure
+            messageContainer.classList.remove('border-green-300', 'bg-green-50');
+            messageContainer.classList.add('border-red-300', 'bg-red-50');
+            
+            submissionMessage.innerHTML = `
+                <p class="text-3xl font-extrabold mb-4 text-red-700">Submission Failed! ⚠️</p>
+                <p class="text-lg font-medium text-red-800">An error occurred while submitting your exam.</p>
+                <p class="text-sm text-red-600 mt-4">Error: ${error.message}</p>
+            `;
+        }
+    };
+
+    // Event listeners for navigation
+    prevBtn.addEventListener('click', () => {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    });
+
+    submitBtn.addEventListener('click', submitExam);
+
+    // Main function to fetch and initialize the exam
+    const initExam = async () => {
+        const examId = getExamId();
+        if (!examId) {
+            loader.textContent = 'Error: No exam ID provided.';
+            return;
+        }
+
+        try {
+            // 1️⃣ Fetch questions - This is the primary protected route
+            const quesRes = await fetch(`/api/exams/${examId}/questions`);
+
+            // 🎯 NEW: CHECK FOR ACCESS RESTRICTION (403) from backend
+            if (quesRes.status === 403) {
+                const errorData = await quesRes.json();
+                
+                // Hide loader and show the Access Denied card
+                loader.classList.add("hidden");
+                accessDeniedMessage.classList.remove("hidden");
+                denialDetails.textContent = errorData.message || "Access is restricted. Please wait for the official start time.";
+                
+                return; // Stop exam initialization
+            }
+            
+            // Handle other errors (404, 500)
+            if (!quesRes.ok) {
+                throw new Error("Failed to load questions or the exam ID is invalid.");
+            }
+            
+            questions = await quesRes.json();
+            
+            // 2️⃣ Fetch exam details (only if questions load successfully)
+            // You should ideally integrate this data into the first questions API to save a request, 
+            // but for now, we keep the original structure.
+            const examRes = await fetch(`/api/exams/${examId}`);
+            if (!examRes.ok) throw new Error("Failed to load exam details.");
+            examData = await examRes.json();
+
+
+            if (!questions || questions.length === 0) {
+                loader.textContent = "This exam has no questions.";
+                return;
+            }
+
+            // Set exam title
+            document.title = examData.title;
+            examTitle.textContent = examData.title;
+
+            // Hide loader, show exam
+            loader.classList.add("hidden");
+            examContainer.classList.remove("hidden");
+
+            // Start timer & show first question
+            startTimer(examData.duration);
+            renderQuestion();
+
+        } catch (err) {
+            console.error(err);
+            loader.textContent = `Error loading exam: ${err.message}`;
+        }
+    };
+
+    // Start the exam initialization
+    initExam();
+</script>
+</body>
+</html>
